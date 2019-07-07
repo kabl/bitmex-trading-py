@@ -1,0 +1,3 @@
+bitmex==0.2.2
+bitmex-ws
+bravado==10.4.1

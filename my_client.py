@@ -14,8 +14,8 @@ class Client:
         self.client = bitmex.bitmex(test=True, api_key=api_key, api_secret=api_secret)
         self.ws = BitMEXWebsocket(endpoint="https://testnet.bitmex.com/api/v2", symbol="XBTUSD", api_key=api_key, api_secret=api_secret)
 
-    def get_orders(self, all_orders=False):
-        if all_orders:
+    def get_orders(self, incl_closed=False):
+        if incl_closed:
             order_filter = None
         else:
             order_filter = json.dumps({"open": True})
@@ -26,6 +26,14 @@ class Client:
             orders_dto.append(OrderResp(order))
 
         return orders_dto
+
+    def get_open_order_by_text(self, text):
+        open_orders = self.get_orders()
+        results = list(filter(lambda o: text in o.text, open_orders))
+        if len(results) == 1:
+            return results[0]
+        else:
+            return None
 
     def get_order_by_id(self, order_id):
         order_filter = json.dumps({"orderID": order_id})
@@ -45,7 +53,7 @@ class Client:
             raise SpamProtectionException()
 
         result = OrderResp(self.client.Order.Order_new(symbol=order.symbol,
-                                                       orderQty=order.quantity,
+                                                       orderQty=order.order_qty,
                                                        price=order.price,
                                                        side=order.side,
                                                        text=order.text,
@@ -60,7 +68,7 @@ class Client:
         print("submit order price:", price)
         print("submit order quantity", quantity)
         print("order value XBT:", orderValueXBt)
-        if math.fabs(orderValueXBt) < 250000:
+        if math.fabs(orderValueXBt) < Calc.spam_protection_invest_XBt:
             raise SpamProtectionException()
 
         return OrderResp(self.client.Order.Order_new(symbol='XBTUSD', orderQty=quantity, price=price).result()[0])

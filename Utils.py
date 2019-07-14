@@ -28,4 +28,3 @@ class Calc:
     @classmethod
     def XBt_to_XBT(cls, XBt):
         return XBt / 100000000
-

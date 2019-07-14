@@ -1,6 +1,8 @@
 import json
 from enum import Enum
-from Utils import *
+from utils import Calc
+from utils import NotEnoughBalanceException
+from utils import SpamProtectionException
 
 
 class OrderResp:
@@ -46,17 +48,17 @@ class LimitOrderReq:
 
         price_XBTUSD = Calc.round_price(price_XBTUSD)
 
-        if(invest_balance < Calc.spam_protection_invest_XBt): #Spam protection
+        if invest_balance < Calc.spam_protection_invest_XBt:  # Spam protection
             print("invest balance too small. Spam protection. Use more than: {}%".format(invest_percentage))
             invest_balance = Calc.spam_protection_invest_XBt
 
         quantity = Calc.round_quantity(price_XBTUSD * Calc.XBt_to_XBT(invest_balance))
         order = LimitOrderReq(side, quantity, price_XBTUSD, text)
 
-        if(order.order_value_XBt > available_balance_XBt):
+        if order.order_value_XBt > available_balance_XBt:
             raise NotEnoughBalanceException()
 
-        if(order.order_value_XBt < Calc.spam_protection_invest_XBt):
+        if order.order_value_XBt < Calc.spam_protection_invest_XBt:
             raise SpamProtectionException()
 
         return order

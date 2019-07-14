@@ -3,7 +3,7 @@ from bot import Bot
 from my_client import Client
 import time
 import bravado
-from dto import *
+from utils import NotEnoughBalanceException
 
 
 def main():
@@ -25,6 +25,7 @@ def run_bot(bot, client, check_interval):
             bot.check_and_update()
             print("[-] INFOS")
             print("[P]", client.get_positions())
+            print("[$]", client.get_last_price())
             for order in client.get_orders():
                 print("[O]", order)
 

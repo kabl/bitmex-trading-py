@@ -2,8 +2,8 @@ import math
 
 
 class NotEnoughBalanceException(Exception):
-   """Raised when the input value is too small"""
-   pass
+    """Raised when the input value is too small"""
+    pass
 
 
 class SpamProtectionException(Exception):
@@ -15,7 +15,8 @@ class Calc:
 
     @classmethod
     def round_price(cls, price):
-        return round(price * 2) / 2 #rounding to x.0 or x.5
+        # rounding to x.0 or x.5
+        return round(price * 2) / 2
 
     @classmethod
     def round_quantity(cls, quantity):

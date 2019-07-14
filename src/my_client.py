@@ -8,7 +8,6 @@ from dto import PositionResp
 from utils import Calc
 from utils import SpamProtectionException
 
-
 upper_band = None
 lower_band = None
 
@@ -19,7 +18,8 @@ class Client:
             raise NotImplementedError("Main net not yet supported")
 
         self.client = bitmex.bitmex(test=True, api_key=api_key, api_secret=api_secret)
-        self.ws = BitMEXWebsocket(endpoint="https://testnet.bitmex.com/api/v2", symbol="XBTUSD", api_key=api_key, api_secret=api_secret)
+        self.ws = BitMEXWebsocket(endpoint="https://testnet.bitmex.com/api/v2", symbol="XBTUSD", api_key=api_key,
+                                  api_secret=api_secret)
 
     def get_orders(self, incl_closed=False):
         if incl_closed:
@@ -69,7 +69,8 @@ class Client:
         return result
 
     def submit_buy_order(self, price, quantity):
-        price = round(price * 2) / 2 #rounding to x.0 or x.5
+        # rounding to x.0 or x.5
+        price = round(price * 2) / 2
         quantity = round(quantity, 0)
         orderValueXBt = (quantity / price) * 100000000
         print("submit order price:", price)
@@ -96,7 +97,10 @@ class Client:
 
     def submit_leverage(self, leverage):
         # Send 0 to enable cross margin.
-        result = self.client.Position.Position_updateLeverage(symbol="XBTUSD", leverage=leverage).result()
+        result = self.client.Position.Position_updateLeverage(
+            symbol="XBTUSD",
+            leverage=leverage).result()
+
         return result
 
     def get_last_trades(self):

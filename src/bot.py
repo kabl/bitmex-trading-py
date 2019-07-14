@@ -1,7 +1,6 @@
 from my_client import Client
-import time
-import bravado
-from dto import *
+from dto import LimitOrderReq
+from dto import Side
 from config import Config
 
 

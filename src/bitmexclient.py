@@ -8,9 +8,6 @@ from dto import PositionResp
 from utils import Calc
 from utils import SpamProtectionException
 
-upper_band = None
-lower_band = None
-
 
 class Client:
     def __init__(self, api_key, api_secret, main_net=False):

@@ -1,7 +1,7 @@
-from my_client import Client
+from bitmexclient import Client
 from dto import LimitOrderReq
 from dto import Side
-from config import Config
+from traderconfig import Config
 
 
 class Bot:

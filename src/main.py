@@ -1,20 +1,19 @@
-from config import Config
-from bot import Bot
-from my_client import Client
 import time
 import bravado
-from utils import NotEnoughBalanceException
+import traderconfig
+import traderbot
+import bitmexclient
+import utils
 
 
 def main():
     print("Hello Bitmex Trading Bot")
-    config = Config("../config.ini")
+    config = traderconfig.Config("../config.ini")
     print("Config:", config)
-
-    client = Client(config.api_key, config.api_secret)
+    client = bitmexclient.Client(config.api_key, config.api_secret)
     client.submit_leverage(config.leverage)
 
-    bot = Bot(client, config)
+    bot = traderbot.Bot(client, config)
     bot.init_bands()
     run_bot(bot, client, config.check_interval)
 
@@ -30,7 +29,7 @@ def run_bot(bot, client, check_interval):
                 print("[O]", order)
 
             time.sleep(check_interval)
-        except NotEnoughBalanceException:
+        except utils.NotEnoughBalanceException:
             print("Not enough balance in the wallet! Cancel all orders")
             # bot.cancel_all_orders()
             time.sleep(check_interval)

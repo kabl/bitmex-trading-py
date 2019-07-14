@@ -3,7 +3,7 @@ from enum import Enum
 from Utils import *
 
 
-class OrderDto:
+class OrderResp:
     def __init__(self, order_dict):
         self.order_id = order_dict["orderID"]
         self.symbol = order_dict["symbol"]
@@ -26,14 +26,7 @@ class Side(Enum):
         return str(self.value[0])
 
 
-class OrderType(Enum):
-    LIMIT = "Limit"
-
-    def __str__(self):
-        return str(self.value)
-
-
-class LimitOrder:
+class LimitOrderReq:
     def __init__(self, side: Side, quantity, price_XBTUSD, text):
         self.side = str(side)
         self.quantity = quantity
@@ -41,7 +34,7 @@ class LimitOrder:
         self.order_value_XBt = Calc.XBT_to_XBt(quantity / price_XBTUSD)
         self.text = text
         self.symbol = "XBTUSD"
-        self.order_type = str(OrderType.LIMIT)
+        self.order_type = "Limit"
 
     def __repr__(self):
         return json.dumps(self.__dict__)
@@ -57,7 +50,7 @@ class LimitOrder:
             invest_balance = Calc.spam_protection_invest_XBt
 
         quantity = Calc.round_quantity(price_XBTUSD * Calc.XBt_to_XBT(invest_balance))
-        order = LimitOrder(side, quantity, price_XBTUSD, text)
+        order = LimitOrderReq(side, quantity, price_XBTUSD, text)
 
         if(order.order_value_XBt > available_balance_XBt):
             raise NotEnoughBalanceException()
@@ -66,3 +59,31 @@ class LimitOrder:
             raise SpamProtectionException()
 
         return order
+
+    @classmethod
+    def create2(cls, side: Side, price_XBTUSD, quantity, text):
+        price_XBTUSD = Calc.round_price(price_XBTUSD)
+        quantity = int(quantity)
+
+        # TODO: Spam protection
+        order = LimitOrderReq(side, quantity, price_XBTUSD, text)
+
+        # TODO: Validate enough liquidity
+
+        if(order.order_value_XBt < Calc.spam_protection_invest_XBt):
+            raise SpamProtectionException()
+
+        return order
+
+
+class PositionResp:
+    def __init__(self, position_dict):
+        self.quantity = position_dict["currentQty"]
+        self.leverage = position_dict["leverage"]
+        self.liquidation_price = position_dict["liquidationPrice"]
+        self.mark_price = position_dict["markPrice"]
+        self.open_order_margin = position_dict["initMargin"]
+        self.position_margin = position_dict["maintMargin"]
+
+    def __repr__(self):
+        return json.dumps(self.__dict__)

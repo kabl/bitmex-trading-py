@@ -1,9 +1,7 @@
-from my_client import Client
+from src.my_client import Client
 import time
-from dto import *
-from Utils import *
 import bravado
-from dto import *
+from src.dto import *
 import configparser
 
 

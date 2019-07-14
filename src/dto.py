@@ -1,6 +1,6 @@
 import json
 from enum import Enum
-from src.Utils import *
+from Utils import *
 
 
 class OrderResp:

@@ -1,7 +1,7 @@
-from src.my_client import Client
+from my_client import Client
 import time
 import bravado
-from src.dto import *
+from dto import *
 import configparser
 
 

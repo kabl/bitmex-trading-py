@@ -1,6 +1,6 @@
 import bitmex
 from bitmex_websocket import BitMEXWebsocket
-from src.dto import *
+from dto import *
 
 
 upper_band = None

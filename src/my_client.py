@@ -8,7 +8,10 @@ lower_band = None
 
 
 class Client:
-    def __init__(self, api_key, api_secret):
+    def __init__(self, api_key, api_secret, main_net=False):
+        if main_net:
+            raise NotImplementedError("Main net not yet supported")
+
         self.client = bitmex.bitmex(test=True, api_key=api_key, api_secret=api_secret)
         self.ws = BitMEXWebsocket(endpoint="https://testnet.bitmex.com/api/v2", symbol="XBTUSD", api_key=api_key, api_secret=api_secret)
 

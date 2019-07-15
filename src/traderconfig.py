@@ -17,6 +17,7 @@ class Config:
         self.leverage = config.getfloat("INVEST_RULES", "LEVERAGE")
 
         self.check_interval = config.getint("DEFAULT", "CHECK_INTERVAL")
+        self.log_to_file = config.getboolean("DEFAULT", "LOG_TO_FILE")
 
     def __repr__(self):
         return json.dumps(self.__dict__)

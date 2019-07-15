@@ -1,4 +1,5 @@
 import time
+import logging
 import bravado
 import traderconfig
 import traderbot
@@ -7,9 +8,21 @@ import utils
 
 
 def main():
-    print("Hello Bitmex Trading Bot")
-    config = traderconfig.Config("../config.ini")
-    print("Config:", config)
+    config = traderconfig.Config("./config.ini")
+    print("Configuration:", config)
+    if config.log_to_file:
+        logging.basicConfig(level=logging.INFO,
+                            format='%(asctime)s - %(levelname)s - %(message)s',
+                            datefmt='%d-%b-%y %H:%M:%S',
+                            filename='./app.log',
+                            filemode='w')
+    else:
+        logging.basicConfig(level=logging.INFO,
+                            format='%(asctime)s - %(levelname)s - %(message)s',
+                            datefmt='%d-%b-%y %H:%M:%S')
+
+    logging.info("Hello Bitmex Trading Bot. Logger")
+    logging.info(f"Config: {config}")
     client = bitmexclient.Client(config.api_key, config.api_secret)
     client.submit_leverage(config.leverage)
 
@@ -22,19 +35,18 @@ def run_bot(bot, client, check_interval):
     while True:
         try:
             bot.check_and_update()
-            print("[-] INFOS")
-            print("[P]", client.get_positions())
-            print("[$]", client.get_last_price())
+            logging.info("[-] INFOS")
+            logging.info(f"[P] {client.get_positions()}")
+            logging.info(f"[$] {client.get_last_price()}")
             for order in client.get_orders():
-                print("[O]", order)
+                logging.info(f"[O] {order}")
 
             time.sleep(check_interval)
         except utils.NotEnoughBalanceException:
-            print("Not enough balance in the wallet! Cancel all orders")
-            # bot.cancel_all_orders()
+            logging.warning("Not enough balance in the wallet!", exc_info=True)
             time.sleep(check_interval)
-        except bravado.exception.HTTPBadRequest as ex:
-            print("HTTPBadRequest:", ex)
+        except bravado.exception.HTTPBadRequest:
+            logging.warning("HTTPBadRequest", exc_info=True)
             time.sleep(check_interval)
 
 

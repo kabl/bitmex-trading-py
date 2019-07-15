@@ -1,12 +1,9 @@
-import bitmex
+import logging
 import json
-import math
+import bitmex
 from bitmex_websocket import BitMEXWebsocket
-from dto import OrderResp
-from dto import LimitOrderReq
-from dto import PositionResp
-from utils import Calc
-from utils import SpamProtectionException
+import dto
+import utils
 
 
 class Client:
@@ -27,7 +24,7 @@ class Client:
         orders = self.client.Order.Order_getOrders(symbol='XBTUSD', reverse=False, filter=order_filter).result()[0]
         orders_dto = []
         for order in orders:
-            orders_dto.append(OrderResp(order))
+            orders_dto.append(dto.OrderResp(order))
 
         return orders_dto
 
@@ -44,53 +41,37 @@ class Client:
         orders = self.client.Order.Order_getOrders(filter=order_filter).result()[0]
         if len(orders) == 0:
             return None
-        return OrderResp(orders[0])
+        return dto.OrderResp(orders[0])
 
     def get_last_price(self):
         ticker = self.ws.get_instrument()["lastPrice"]
         return ticker
 
-    def submit(self, order: LimitOrderReq):
-        print("POST:", order)
+    def submit(self, order: dto.LimitOrderReq):
+        logging.info(f"Submit order: {order}")
 
-        if order.order_value_XBt < Calc.spam_protection_invest_XBt:
-            raise SpamProtectionException()
+        if order.order_value_XBt < utils.Calc.spam_protection_invest_XBt:
+            raise utils.SpamProtectionException()
 
-        result = OrderResp(self.client.Order.Order_new(symbol=order.symbol,
+        result = dto.OrderResp(self.client.Order.Order_new(symbol=order.symbol,
                                                        orderQty=order.order_qty,
                                                        price=order.price,
                                                        side=order.side,
                                                        text=order.text,
                                                        ordType=order.order_type).result()[0])
-        print("POST Result", result)
+        logging.info(f"Submit Resp: {result}")
         return result
 
-    def submit_buy_order(self, price, quantity):
-        # rounding to x.0 or x.5
-        price = round(price * 2) / 2
-        quantity = round(quantity, 0)
-        orderValueXBt = (quantity / price) * 100000000
-        print("submit order price:", price)
-        print("submit order quantity", quantity)
-        print("order value XBT:", orderValueXBt)
-        if math.fabs(orderValueXBt) < Calc.spam_protection_invest_XBt:
-            raise SpamProtectionException()
-
-        return OrderResp(self.client.Order.Order_new(symbol='XBTUSD', orderQty=quantity, price=price).result()[0])
-
     def cancel_order(self, order_id):
-        return OrderResp(self.client.Order.Order_cancel(orderID=order_id).result()[0][0])
+        return dto.OrderResp(self.client.Order.Order_cancel(orderID=order_id).result()[0][0])
 
     def cancel_all(self):
         orders = self.client.Order.Order_cancelAll().result()[0]
         orders_dto = []
         for order in orders:
-            orders_dto.append(OrderResp(order))
+            orders_dto.append(dto.OrderResp(order))
 
         return orders_dto
-
-    def submit_sell_order(self, price, quantity):
-        return self.submit_buy_order(price, -1 * quantity)
 
     def submit_leverage(self, leverage):
         # Send 0 to enable cross margin.
@@ -110,7 +91,7 @@ class Client:
         return self.get_funds()["availableMargin"]
 
     def get_positions(self):
-        return PositionResp(self.ws.data['position'][0])
+        return dto.PositionResp(self.ws.data['position'][0])
 
     def get_position_margin(self):
         return self.get_positions()[0]["maintMargin"]

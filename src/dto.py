@@ -1,8 +1,7 @@
+import logging
 import json
 from enum import Enum
-from utils import Calc
-from utils import NotEnoughBalanceException
-from utils import SpamProtectionException
+import utils
 
 
 class OrderResp:
@@ -13,7 +12,7 @@ class OrderResp:
         self.price = order_dict["price"]
         self.order_type = order_dict["ordType"]
         self.order_status = order_dict["ordStatus"]
-        self.order_value = int(Calc.XBT_to_XBt(self.order_qty / self.price))
+        self.order_value = int(utils.Calc.XBT_to_XBt(self.order_qty / self.price))
         self.text = order_dict["text"]
         self.order_id = order_dict["orderID"]
 
@@ -22,11 +21,11 @@ class OrderResp:
 
 
 class Side(Enum):
-    BUY = "Buy",
-    SELL = "Sell",
+    BUY = "Buy"
+    SELL = "Sell"
 
     def __str__(self):
-        return str(self.value[0])
+        return str(self.value)
 
 
 class LimitOrderReq:
@@ -34,7 +33,7 @@ class LimitOrderReq:
         self.side = str(side)
         self.order_qty = order_qty
         self.price = price_XBTUSD
-        self.order_value_XBt = Calc.XBT_to_XBt(order_qty / price_XBTUSD)
+        self.order_value_XBt = utils.Calc.XBT_to_XBt(order_qty / price_XBTUSD)
         self.text = text
         self.symbol = "XBTUSD"
         self.order_type = "Limit"
@@ -46,51 +45,57 @@ class LimitOrderReq:
     def create(cls, side: Side, price_XBTUSD, available_balance_XBt, invest_percentage, text):
         invest_balance = int(available_balance_XBt * (invest_percentage / 100))
 
-        price_XBTUSD = Calc.round_price(price_XBTUSD)
+        price_XBTUSD = utils.Calc.round_price(price_XBTUSD)
 
-        if invest_balance < Calc.spam_protection_invest_XBt:  # Spam protection
-            print("invest balance too small. Spam protection. Use more than: {}%".format(invest_percentage))
-            invest_balance = Calc.spam_protection_invest_XBt
+        if invest_balance < utils.Calc.spam_protection_invest_XBt:  # Spam protection
+            logging.warning(f"Spam protection. Set to minimum value: {utils.Calc.spam_protection_invest_XBt}")
+            invest_balance = utils.Calc.spam_protection_invest_XBt
 
-        quantity = Calc.round_quantity(price_XBTUSD * Calc.XBt_to_XBT(invest_balance))
+        quantity = utils.Calc.round_quantity(price_XBTUSD * utils.Calc.XBt_to_XBT(invest_balance))
         order = LimitOrderReq(side, quantity, price_XBTUSD, text)
 
         if order.order_value_XBt > available_balance_XBt:
-            raise NotEnoughBalanceException()
+            raise utils.NotEnoughBalanceException()
 
-        if order.order_value_XBt < Calc.spam_protection_invest_XBt:
-            raise SpamProtectionException()
+        if order.order_value_XBt < utils.Calc.spam_protection_invest_XBt:
+            raise utils.SpamProtectionException()
 
         return order
 
     @classmethod
     def create_sell_higher(cls, prev_order, sell_price_XBTUSD):
 
-        sell_price_XBTUSD = Calc.round_price(sell_price_XBTUSD)
+        sell_price_XBTUSD = utils.Calc.round_price(sell_price_XBTUSD)
         adjusted_quantity = prev_order.order_qty * (sell_price_XBTUSD / prev_order.price)
-        adjusted_quantity = Calc.round_quantity(adjusted_quantity)
+        adjusted_quantity = utils.Calc.round_quantity(adjusted_quantity)
 
-        order = LimitOrderReq(Side.SELL, adjusted_quantity, sell_price_XBTUSD, "profit_order: " + prev_order.order_id)
+        order = LimitOrderReq(Side.SELL,
+                              adjusted_quantity,
+                              sell_price_XBTUSD,
+                              "profit_order: " + prev_order.order_id)
 
         # TODO: Validate enough liquidity
 
-        if order.order_value_XBt < Calc.spam_protection_invest_XBt:
-            raise SpamProtectionException()
+        if order.order_value_XBt < utils.Calc.spam_protection_invest_XBt:
+            raise utils.SpamProtectionException()
 
         return order
 
     @classmethod
     def create_buy_lower(cls, prev_order, buy_price_XBTUSD):
 
-        buy_price_XBTUSD = Calc.round_price(buy_price_XBTUSD)
+        buy_price_XBTUSD = utils.Calc.round_price(buy_price_XBTUSD)
         quantity = int(prev_order.order_qty)
 
-        order = LimitOrderReq(Side.BUY, quantity, buy_price_XBTUSD, "profit_order: " + prev_order.order_id)
+        order = LimitOrderReq(Side.BUY,
+                              quantity,
+                              buy_price_XBTUSD,
+                              "profit_order: " + prev_order.order_id)
 
         # TODO: Validate enough liquidity
 
-        if order.order_value_XBt < Calc.spam_protection_invest_XBt:
-            raise SpamProtectionException()
+        if order.order_value_XBt < utils.Calc.spam_protection_invest_XBt:
+            raise utils.SpamProtectionException()
 
         return order
 

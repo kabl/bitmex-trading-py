@@ -3,3 +3,4 @@ venv/
 .idea
 __pycache__
 deploy.sh
+app.log

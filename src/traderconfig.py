@@ -3,7 +3,7 @@ import json
 
 
 class Config:
-    def __init__(self, file_name="config.ini"):
+    def __init__(self, file_name="config-test.ini"):
         config = configparser.ConfigParser()
         config.read(file_name)
 

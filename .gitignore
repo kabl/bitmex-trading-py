@@ -1,4 +1,5 @@
-config.ini
+config-test.ini
+config-prod.ini
 venv/
 .idea
 __pycache__

@@ -1,5 +1,6 @@
 import time
 import logging
+import sys
 import bravado
 import traderconfig
 import traderbot
@@ -8,7 +9,13 @@ import utils
 
 
 def main():
-    config = traderconfig.Config("./config.ini")
+    if len(sys.argv) != 2:
+        print("Config file missing")
+        print(f"{sys.argv[0]} <CONFIG FILE>")
+        exit(0)
+
+    # config = traderconfig.Config("./config-test.ini")
+    config = traderconfig.Config(sys.argv[1])
     print("Configuration:", config)
     if config.log_to_file:
         logging.basicConfig(level=logging.INFO,
@@ -47,6 +54,9 @@ def run_bot(bot, client, check_interval):
             time.sleep(check_interval)
         except bravado.exception.HTTPBadRequest:
             logging.warning("HTTPBadRequest", exc_info=True)
+            time.sleep(check_interval)
+        except Exception:
+            logging.warning("Exception", exc_info=True)
             time.sleep(check_interval)
 
 

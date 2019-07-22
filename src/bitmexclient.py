@@ -8,12 +8,15 @@ import utils
 
 class Client:
     def __init__(self, api_key, api_secret, main_net=False):
+        logging.info(f"Initialize client. Main net: {main_net}")
         if main_net:
-            raise NotImplementedError("Main net not yet supported")
-
-        self.client = bitmex.bitmex(test=True, api_key=api_key, api_secret=api_secret)
-        self.ws = BitMEXWebsocket(endpoint="https://testnet.bitmex.com/api/v2", symbol="XBTUSD", api_key=api_key,
-                                  api_secret=api_secret)
+            self.client = bitmex.bitmex(test=False, api_key=api_key, api_secret=api_secret)
+            self.ws = BitMEXWebsocket(endpoint="https://bitmex.com/api/v2", symbol="XBTUSD", api_key=api_key,
+                                      api_secret=api_secret)
+        else:
+            self.client = bitmex.bitmex(test=True, api_key=api_key, api_secret=api_secret)
+            self.ws = BitMEXWebsocket(endpoint="https://testnet.bitmex.com/api/v2", symbol="XBTUSD", api_key=api_key,
+                                      api_secret=api_secret)
 
     def get_orders(self, incl_closed=False):
         if incl_closed:

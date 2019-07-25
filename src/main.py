@@ -30,8 +30,12 @@ def main():
 
     logging.info("Hello Bitmex Trading Bot. Logger")
     logging.info(f"Config: {config}")
-    client = bitmexclient.Client(config.api_key, config.api_secret)
+    client = bitmexclient.Client(config.api_key, config.api_secret, config.main_net)
     client.submit_leverage(config.leverage)
+
+    # while True:
+    #    print(client.get_price())
+    #    time.sleep(5)
 
     bot = traderbot.Bot(client, config)
     bot.init_bands()
@@ -43,8 +47,9 @@ def run_bot(bot, client, check_interval):
         try:
             bot.check_and_update()
             logging.info("[-] INFOS")
+            logging.info(f"[W] {client.get_wallet()}")
             logging.info(f"[P] {client.get_positions()}")
-            logging.info(f"[$] {client.get_last_price()}")
+            logging.info(f"[$] {client.get_price()}")
             for order in client.get_orders():
                 logging.info(f"[O] {order}")
 

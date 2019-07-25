@@ -31,11 +31,11 @@ class Bot:
             logging.info(f"Upper Band not active. Created new one: {self.upper_band_order_id}")
 
     def create_lower_band_order(self):
-        last_price = self.client.get_last_price()
+        last_price = self.client.get_price().last_price
         buy_price = last_price * (1 - (self.config.band_pc / 100))
         order_buy = dto.LimitOrderReq.create(dto.Side.BUY,
                                              buy_price,
-                                             self.client.get_available_balance(),
+                                             self.client.get_wallet().available_balance,
                                              self.config.order_size_pc,
                                              "lower_band")
         lower_band_order = self.client.submit(order_buy)
@@ -43,11 +43,11 @@ class Bot:
         return lower_band_order.order_id
 
     def create_upper_band_order(self):
-        last_price = self.client.get_last_price()
+        last_price = self.client.get_price().last_price
         sell_price = last_price * (1 + (self.config.band_pc / 100))
         order_sell = dto.LimitOrderReq.create(dto.Side.SELL,
                                               sell_price,
-                                              self.client.get_available_balance(),
+                                              self.client.get_wallet().available_balance,
                                               self.config.order_size_pc,
                                               "upper_band")
         upper_band_order = self.client.submit(order_sell)
@@ -72,7 +72,7 @@ class Bot:
             if lower_band_order.order_status == "Filled":
                 logging.info(f"lower band Filled: {lower_band_order}")
                 sell_price = lower_band_order.price * (1 + (self.config.take_profit_pc / 100))
-                last_price = self.client.get_last_price()
+                last_price = self.client.get_price().last_price
                 sell_price = max(sell_price, last_price)
                 profit_order = dto.LimitOrderReq.create_sell_higher(lower_band_order, sell_price)
 
@@ -92,7 +92,7 @@ class Bot:
             if upper_band_order.order_status == "Filled":
                 logging.info(f"lower band Filled: {upper_band_order}")
                 buy_price = upper_band_order.price * (1 - (self.config.take_profit_pc / 100))
-                last_price = self.client.get_last_price()
+                last_price = self.client.get_price().last_price
                 buy_price = min(buy_price, last_price)
                 profit_order = dto.LimitOrderReq.create_buy_lower(upper_band_order, buy_price)
 

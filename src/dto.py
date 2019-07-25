@@ -105,9 +105,35 @@ class PositionResp:
         self.current_qty = position_dict["currentQty"]
         self.leverage = position_dict["leverage"]
         self.liquidation_price = position_dict["liquidationPrice"]
-        self.mark_price = position_dict["markPrice"]
-        self.open_order_margin = position_dict["initMargin"]
-        self.position_margin = position_dict["maintMargin"]
+        # self.mark_price = position_dict["markPrice"]
+        # self.order_margin = position_dict["initMargin"]
+        # self.position_margin = position_dict["maintMargin"]
+
+    def __repr__(self):
+        return json.dumps(self.__dict__)
+
+
+class WalletResp:
+    def __init__(self, funds_dict):
+        self.wallet_balance = funds_dict["walletBalance"]
+        self.available_balance = funds_dict["availableMargin"]
+        self.unrealised_pnl = funds_dict["unrealisedPnl"]
+        # self.margin_balance = funds_dict["marginBalance"] # wallet_balance + unrealised_pnl
+        self.order_margin = funds_dict["initMargin"]
+        self.position_margin = funds_dict["maintMargin"]
+
+    def __repr__(self):
+        return json.dumps(self.__dict__)
+
+
+class PriceResp:
+    def __init__(self, price_dict):
+        # self.fair_price = price_dict["fairPrice"]
+        self.mark_price = price_dict["markPrice"]
+        self.last_price = price_dict["lastPrice"]
+        self.low_price = price_dict["lowPrice"]
+        self.high_price = price_dict["highPrice"]
+        self.prev_24h = price_dict["prevPrice24h"]
 
     def __repr__(self):
         return json.dumps(self.__dict__)

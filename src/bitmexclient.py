@@ -11,7 +11,7 @@ class Client:
         logging.info(f"Initialize client. Main net: {main_net}")
         if main_net:
             self.client = bitmex.bitmex(test=False, api_key=api_key, api_secret=api_secret)
-            self.ws = BitMEXWebsocket(endpoint="https://bitmex.com/api/v2", symbol="XBTUSD", api_key=api_key,
+            self.ws = BitMEXWebsocket(endpoint="https://www.bitmex.com/api/v2", symbol="XBTUSD", api_key=api_key,
                                       api_secret=api_secret)
         else:
             self.client = bitmex.bitmex(test=True, api_key=api_key, api_secret=api_secret)
@@ -46,9 +46,8 @@ class Client:
             return None
         return dto.OrderResp(orders[0])
 
-    def get_last_price(self):
-        ticker = self.ws.get_instrument()["lastPrice"]
-        return ticker
+    def get_price(self):
+        return dto.PriceResp(self.ws.get_instrument())
 
     def submit(self, order: dto.LimitOrderReq):
         logging.info(f"Submit order: {order}")
@@ -87,17 +86,9 @@ class Client:
     def get_last_trades(self):
         return self.ws.recent_trades()
 
-    def get_funds(self):
-        return self.ws.funds()
-
-    def get_available_balance(self):
-        return self.get_funds()["availableMargin"]
+    def get_wallet(self):
+        return dto.WalletResp(self.ws.funds())
 
     def get_positions(self):
         return dto.PositionResp(self.ws.data['position'][0])
 
-    def get_position_margin(self):
-        return self.get_positions()[0]["maintMargin"]
-
-    def get_open_order_margin(self):
-        return self.get_positions()[0]["initMargin"]

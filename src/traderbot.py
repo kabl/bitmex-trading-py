@@ -70,7 +70,7 @@ class Bot:
 
         if lower_band_order:
             if lower_band_order.order_status == "Filled":
-                logging.info(f"lower band Filled: {lower_band_order}")
+                logging.info(f"Lower band Filled: {lower_band_order}")
                 sell_price = lower_band_order.price * (1 + (self.config.take_profit_pc / 100))
                 last_price = self.client.get_price().last_price
                 sell_price = max(sell_price, last_price)
@@ -90,7 +90,7 @@ class Bot:
         upper_band_order = self.client.get_order_by_id(self.upper_band_order_id)
         if upper_band_order:
             if upper_band_order.order_status == "Filled":
-                logging.info(f"lower band Filled: {upper_band_order}")
+                logging.info(f"Upper band Filled: {upper_band_order}")
                 buy_price = upper_band_order.price * (1 - (self.config.take_profit_pc / 100))
                 last_price = self.client.get_price().last_price
                 buy_price = min(buy_price, last_price)

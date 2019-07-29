@@ -46,9 +46,6 @@ class Client:
             return None
         return dto.OrderResp(orders[0])
 
-    def get_price(self):
-        return dto.PriceResp(self.ws.get_instrument())
-
     def submit(self, order: dto.LimitOrderReq):
         logging.info(f"Submit order: {order}")
 
@@ -83,8 +80,8 @@ class Client:
 
         return result
 
-    def get_last_trades(self):
-        return self.ws.recent_trades()
+    def get_price(self):
+        return dto.PriceResp(self.ws.get_instrument())
 
     def get_wallet(self):
         return dto.WalletResp(self.ws.funds())
@@ -92,3 +89,6 @@ class Client:
     def get_positions(self):
         return dto.PositionResp(self.ws.data['position'][0])
 
+    # not used
+    def get_last_trades(self):
+        return self.ws.recent_trades()

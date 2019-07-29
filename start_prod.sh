@@ -1,3 +1,3 @@
 #!/bin/bash
 
-nohup python3.6 src/main.py config-prod.ini &
+nohup python3.7 src/main.py config-prod.ini &

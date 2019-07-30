@@ -1,7 +1,7 @@
 import logging
 import json
 import bitmex
-from bitmex_websocket import BitMEXWebsocket
+#from bitmex_websocket import BitMEXWebsocket
 import dto
 import utils
 
@@ -11,12 +11,12 @@ class Client:
         logging.info(f"Initialize client. Main net: {main_net}")
         if main_net:
             self.client = bitmex.bitmex(test=False, api_key=api_key, api_secret=api_secret)
-            self.ws = BitMEXWebsocket(endpoint="https://www.bitmex.com/api/v2", symbol="XBTUSD", api_key=api_key,
-                                      api_secret=api_secret)
+            # self.ws = BitMEXWebsocket(endpoint="https://www.bitmex.com/api/v2", symbol="XBTUSD", api_key=api_key,
+            #                          api_secret=api_secret)
         else:
             self.client = bitmex.bitmex(test=True, api_key=api_key, api_secret=api_secret)
-            self.ws = BitMEXWebsocket(endpoint="https://testnet.bitmex.com/api/v2", symbol="XBTUSD", api_key=api_key,
-                                      api_secret=api_secret)
+            # self.ws = BitMEXWebsocket(endpoint="https://testnet.bitmex.com/api/v2", symbol="XBTUSD", api_key=api_key,
+            #                          api_secret=api_secret)
 
     def get_orders(self, incl_closed=False):
         if incl_closed:
@@ -80,15 +80,30 @@ class Client:
 
         return result
 
-    def get_price(self):
-        return dto.PriceResp(self.ws.get_instrument())
-
     def get_wallet(self):
-        return dto.WalletResp(self.ws.funds())
+        result = self.client.User.User_getMargin().result()
+        return dto.WalletResp(result[0])
 
     def get_positions(self):
-        return dto.PositionResp(self.ws.data['position'][0])
+        pos_filter = json.dumps({"symbol": "XBTUSD"})
+        result = self.client.Position.Position_get(filter=pos_filter).result()
+        return dto.PositionResp(result[0][0])
+
+    def get_price(self):
+        inst_filter = json.dumps({"symbol": "XBTUSD"})
+        result = self.client.Instrument.Instrument_get(filter=inst_filter).result()
+        return dto.PriceResp(result[0][0])
+
+
+    #def get_price(self):
+    #    return dto.PriceResp(self.ws.get_instrument())
+
+    # def get_wallet(self):
+    #    return dto.WalletResp(self.ws.funds())
+
+    # def get_positions(self):
+    #    return dto.PositionResp(self.ws.data['position'][0])
 
     # not used
-    def get_last_trades(self):
-        return self.ws.recent_trades()
+    # def get_last_trades(self):
+    #    return self.ws.recent_trades()

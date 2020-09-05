@@ -42,7 +42,7 @@ class LimitOrderReq:
         return json.dumps(self.__dict__)
 
     @classmethod
-    def create(cls, side: Side, price_XBTUSD, available_balance_XBt, invest_percentage, text):
+    def create(cls, side: Side, price_XBTUSD, available_balance_XBt, invest_percentage, text, spam_protection=True):
         invest_balance = int(available_balance_XBt * (invest_percentage / 100))
 
         price_XBTUSD = utils.Calc.round_price(price_XBTUSD)
@@ -57,8 +57,9 @@ class LimitOrderReq:
         if order.order_value_XBt > available_balance_XBt:
             raise utils.NotEnoughBalanceException()
 
-        if order.order_value_XBt < utils.Calc.spam_protection_invest_XBt:
-            raise utils.SpamProtectionException()
+        if spam_protection:
+            if order.order_value_XBt < utils.Calc.spam_protection_invest_XBt:
+                raise utils.SpamProtectionException()
 
         return order
 

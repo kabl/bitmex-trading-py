@@ -1,6 +1,8 @@
 config-test.ini
 config-prod.ini
 venv/
+venv2/
+venv3/
 .idea
 __pycache__
 deploy.sh

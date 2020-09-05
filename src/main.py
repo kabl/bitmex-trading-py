@@ -37,6 +37,23 @@ def main():
     #    print(client.get_price())
     #    time.sleep(5)
 
+    wallet = client.get_wallet()
+    position = client.get_positions()
+    price = client.get_price()
+
+    logging.info(f"[W] {wallet}")
+    logging.info(f"[P] {position}")
+    logging.info(f"[$] {price}")
+
+    if position.current_qty == 0:
+        logging.info(f"[+] No quantity available. Init with 50%. {position}")
+        quantity = utils.Calc.round_quantity(price.last_price * utils.Calc.XBt_to_XBT(wallet.available_balance / 2))
+        print("Quantity: " + str(quantity))
+        client.buy_market(quantity)
+    else:
+        logging.info("[-] Bot was initialized before. Start with the bands")
+
+    #client.sell_position_at_market()
     bot = traderbot.Bot(client, config)
     bot.init_bands()
     run_bot(bot, client, config.check_interval)
@@ -50,6 +67,7 @@ def run_bot(bot, client, check_interval):
             logging.info(f"[W] {client.get_wallet()}")
             logging.info(f"[P] {client.get_positions()}")
             logging.info(f"[$] {client.get_price()}")
+
             for order in client.get_orders():
                 logging.info(f"[O] {order}")
 

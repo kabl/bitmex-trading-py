@@ -61,10 +61,21 @@ class Client:
         logging.info(f"Submit Resp: {result}")
         return result
 
+    def buy_market(self, quantity):
+        logging.info(f"Submit_market order quantity: {quantity}")
+
+        result = dto.OrderResp(self.client.Order.Order_new(symbol="XBTUSD",
+                                                       orderQty=quantity,
+                                                       side=str(dto.Side.BUY),
+                                                       text="Buy market",
+                                                       ordType="Market").result()[0])
+        logging.info(f"Submit Resp: {result}")
+        return result
+
     def cancel_order(self, order_id):
         return dto.OrderResp(self.client.Order.Order_cancel(orderID=order_id).result()[0][0])
 
-    def cancel_all(self):
+    def cancel_all_orders(self):
         orders = self.client.Order.Order_cancelAll().result()[0]
         orders_dto = []
         for order in orders:
@@ -80,6 +91,11 @@ class Client:
 
         return result
 
+    def sell_position_at_market(self):
+        logging.info("Sell whole position at market")
+        result = self.client.Order.Order_closePosition(symbol='XBTUSD').result()
+        logging.info(f"Sell Resp: {result}")
+
     def get_wallet(self):
         result = self.client.User.User_getMargin().result()
         return dto.WalletResp(result[0])
@@ -87,6 +103,7 @@ class Client:
     def get_positions(self):
         pos_filter = json.dumps({"symbol": "XBTUSD"})
         result = self.client.Position.Position_get(filter=pos_filter).result()
+        logging.info(f"[P] {result}")
         return dto.PositionResp(result[0][0])
 
     def get_price(self):

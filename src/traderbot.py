@@ -19,7 +19,7 @@ class Bot:
             self.lower_band_order_id = lower_band_order.order_id
             logging.info(f"Use existing lower band: {self.lower_band_order_id}")
         else:
-            self.lower_band_order_id = self.create_lower_band_order()
+            self.lower_band_order_id = self.create_lower_band_order(spam_protection=False)
             logging.info(f"Lower Band not active. Created new one: {self.lower_band_order_id}")
 
         upper_band_order = self.client.get_open_order_by_text("upper_band")
@@ -27,12 +27,13 @@ class Bot:
             self.upper_band_order_id = upper_band_order.order_id
             logging.info(f"Use existing upper band: {self.upper_band_order_id}")
         else:
-            self.upper_band_order_id = self.create_upper_band_order()
+            self.upper_band_order_id = self.create_upper_band_order(spam_protection=False)
             logging.info(f"Upper Band not active. Created new one: {self.upper_band_order_id}")
 
     def check_and_update(self):
-        lower_band_order = self.client.get_order_by_id(self.lower_band_order_id)
+        self.check_liquidation()
 
+        lower_band_order = self.client.get_order_by_id(self.lower_band_order_id)
         if lower_band_order:
             if lower_band_order.order_status == "Filled":
                 logging.info(f"Lower band Filled: {lower_band_order}")
@@ -72,26 +73,26 @@ class Bot:
             logging.warning("No upper band order found. Create new one")
             self.upper_band_order_id = self.create_upper_band_order()
 
-    def create_lower_band_order(self):
+    def create_lower_band_order(self, spam_protection=True):
         last_price = self.client.get_price().last_price
         buy_price = last_price * (1 - (self.config.band_pc / 100))
         order_buy = dto.LimitOrderReq.create(dto.Side.BUY,
                                              buy_price,
                                              self.client.get_wallet().available_balance,
                                              self.config.order_size_pc,
-                                             "lower_band")
+                                             "lower_band", spam_protection)
         lower_band_order = self.client.submit(order_buy)
         logging.info(f"New lower band order: {lower_band_order}")
         return lower_band_order.order_id
 
-    def create_upper_band_order(self):
+    def create_upper_band_order(self, spam_protection=True):
         last_price = self.client.get_price().last_price
         sell_price = last_price * (1 + (self.config.band_pc / 100))
         order_sell = dto.LimitOrderReq.create(dto.Side.SELL,
                                               sell_price,
                                               self.client.get_wallet().available_balance,
                                               self.config.order_size_pc,
-                                              "upper_band")
+                                              "upper_band", spam_protection)
         upper_band_order = self.client.submit(order_sell)
         logging.info(f"New upper band order: {upper_band_order}")
         return upper_band_order.order_id
@@ -106,4 +107,17 @@ class Bot:
             self.client.cancel_order(self.upper_band_order_id)
 
     def cancel_all_orders(self):
-        self.client.cancel_all()
+        self.client.cancel_all_orders()
+
+    def check_liquidation(self):
+        position = self.client.get_positions()
+        price = self.client.get_price().last_price
+        diff = price - position.liquidation_price
+        logging.info(f"[-] Liquidation check. price: {price}, P: {position}")
+        if position.liquidation_price > price:
+            logging.error(f"[E] Invalid data position: {position}")
+            return
+        if diff < 500:
+            logging.error(f"Liquidation Alert. Sell all: {diff}")
+            self.client.sell_position_at_market()
+
